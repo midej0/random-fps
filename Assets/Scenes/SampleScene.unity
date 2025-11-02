@@ -501,12 +501,16 @@ MonoBehaviour:
   acceleration: 150
   sprintMultiplier: 1.5
   baseMaxWalkSpeed: 5
-  frictionForce: 10
+  baseFrictionForce: 10
   movementDeadzone: 0.01
   airAcceleration: 50
   baseMaxAirWalkSpeed: 3
   gravityMultiplier: 1.5
   jumpForce: 5
+  baseHeight: 2
+  slideHeight: 1
+  slideFriction: 1
+  slideSpeedBoost: 1.5
   mouseSensitivity: 1000
   upDownRange: 90
   groundMask:
