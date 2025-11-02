@@ -437,6 +437,7 @@ GameObject:
   - component: {fileID: 731465026}
   - component: {fileID: 731465027}
   - component: {fileID: 731465028}
+  - component: {fileID: 731465029}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -510,12 +511,27 @@ MonoBehaviour:
   baseHeight: 2
   slideHeight: 1
   slideFriction: 1
-  slideSpeedBoost: 1.5
+  transissionTime: 0.1
+  slideStartThreshold: 5
+  slideStopThreshold: 1.5
   mouseSensitivity: 1000
   upDownRange: 90
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+--- !u!114 &731465029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 731465025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97faa7d9cd9b44d39a41a161b7e0e8a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTilt: 0
 --- !u!1 &775869923
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ using UnityEngine.TextCore.Text;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("GroundMovement parameters")]
+    [Header("Ground Movement Parameters")]
     [SerializeField] private float acceleration = 10.0f;
     [SerializeField] private float sprintMultiplier = 2.0f;
     [SerializeField] private float baseMaxWalkSpeed = 10.0f;
@@ -22,32 +22,36 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float baseMaxAirWalkSpeed = 10.0f;
     [SerializeField] private float gravityMultiplier = 1.0f;
 
-    [Header("Jump parameters")]
+    [Header("Jump Parameters")]
     [SerializeField] private float jumpForce = 50.0f;
 
-    [Header("Slide Params")]
+    [Header("Slide Parameters")]
     [SerializeField] private float baseHeight = 2.0f;
     [SerializeField] private float slideHeight = 1.0f;
     [SerializeField] private float slideFriction = 1.0f;
+    [SerializeField] private float transissionTime = 1.0f;
     [SerializeField] private float slideStartThreshold = 5.0f;
     [SerializeField] private float slideStopThreshold = 1.0f;
+    [SerializeField] private float slideCameraTilt = 1.5f;
 
-    [Header("Look paramaters")]
+    [Header("Look Paramaters")]
     [SerializeField] private float mouseSensitivity = 2.0f;
     [SerializeField] private float upDownRange = 90.0f;
 
-    [Header("is grounded parameters")]
+    [Header("Grounded")]
     [SerializeField] private LayerMask groundMask;
 
 
     //Private varaibles to help with movement logic
     private CharacterController characterController;
-    private Camera mainCamera;
+    private Camera mainCam;
+    private CameraEffects camEffects;
     private PlayerInputHandler playerInputHandler;
     private Vector3 velocity;
     private float verticalRotation;
     private float frictionForce;
     private bool grounded;
+    private bool doCamEffects = true;
     private bool sprinting = false;
     private bool sliding = false;
     private float maxWalkSpeed;
@@ -56,8 +60,14 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
-        mainCamera = Camera.main;
+        mainCam = Camera.main;
         velocity = Vector3.zero;
+        camEffects = GetComponent<CameraEffects>();
+        if(camEffects == null)
+        {
+            Debug.LogWarning("No Camera Effects Script Detected");
+            doCamEffects = false;
+        }
         Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -181,6 +191,10 @@ public class PlayerMovement : MonoBehaviour
                 if (sliding)
                 {
                     characterController.height = baseHeight;
+                    if(doCamEffects)
+                    {
+                        StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
+                    }
                     sliding = false;
                     frictionForce = baseFrictionForce;
                 }
@@ -195,13 +209,21 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
-            StartCoroutine(HandleCrouching(characterController.height, slideHeight, 0.2f));
+            StartCoroutine(HandleCrouching(characterController.height, slideHeight, transissionTime));
+            if(doCamEffects)
+            {
+                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCameraTilt, 0.3f));
+            }
             sliding = true;
             frictionForce = slideFriction;
         }
         else if (!playerInputHandler.slideTriggered && sliding || horizontalVel.magnitude < slideStopThreshold && sliding)
         {
-            StartCoroutine(HandleCrouching(characterController.height, baseHeight, 0.2f));
+            StartCoroutine(HandleCrouching(characterController.height, baseHeight, transissionTime));
+            if(doCamEffects)
+            {
+                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.3f));
+            }
             sliding = false;
             frictionForce = baseFrictionForce;
         }
@@ -225,6 +247,13 @@ public class PlayerMovement : MonoBehaviour
 
         verticalRotation -= playerInputHandler.lookInput.y * mouseSensitivity * Time.deltaTime;
         verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
-        mainCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
+        if (doCamEffects)
+        {
+            mainCam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, camEffects.cameraTilt);
+        }
+        else
+        {
+            mainCam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
+        }
     }
 }
