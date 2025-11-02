@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEditor;
 using UnityEditor.Performance.ProfileAnalyzer;
 using UnityEngine;
@@ -108,7 +109,8 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 accelerationVector = (transform.right * playerInputHandler.moveInput.x + transform.forward * playerInputHandler.moveInput.y) * acceleration * Time.deltaTime;
         float hVMagnitude = horizontalVel.magnitude;
-
+        
+        horizontalVel += accelerationVector;
         if (hVMagnitude <= maxWalkSpeed)
         {
             horizontalVel += accelerationVector;
@@ -176,6 +178,12 @@ public class PlayerMovement : MonoBehaviour
             if (playerInputHandler.jumpTriggered)
             {
                 velocity.y = jumpForce;
+                if (sliding)
+                {
+                    characterController.height = baseHeight;
+                    sliding = false;
+                    frictionForce = baseFrictionForce;
+                }
             }
         }else
         {
@@ -185,18 +193,28 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleSliding(ref Vector3 horizontalVel)
     {
-        Debug.Log(horizontalVel.magnitude);
-        if (playerInputHandler.slideTriggered && horizontalVel.magnitude > slideStartThreshold && !sliding && grounded)
+        if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
-            characterController.height = slideHeight;
+            StartCoroutine(HandleCrouching(characterController.height, slideHeight, 0.2f));
             sliding = true;
             frictionForce = slideFriction;
         }
-        else if (!playerInputHandler.slideTriggered && sliding || horizontalVel.magnitude < slideStopThreshold)
+        else if (!playerInputHandler.slideTriggered && sliding || horizontalVel.magnitude < slideStopThreshold && sliding)
         {
-            characterController.height = baseHeight;
+            StartCoroutine(HandleCrouching(characterController.height, baseHeight, 0.2f));
             sliding = false;
             frictionForce = baseFrictionForce;
+        }
+    }
+
+    private IEnumerator HandleCrouching(float startHeight, float endHeight, float duration)
+    {
+        float counter = 0.0f;
+
+        while (counter < duration){
+            counter += Time.unscaledDeltaTime;
+            characterController.height = Mathf.Lerp(startHeight, endHeight, counter / duration);
+            yield return null; 
         }
     }
 
