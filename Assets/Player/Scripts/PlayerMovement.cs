@@ -12,7 +12,6 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Ground Movement Parameters")]
     [SerializeField] private float acceleration = 10.0f;
-    [SerializeField] private float sprintMultiplier = 2.0f;
     [SerializeField] private float baseMaxWalkSpeed = 10.0f;
     [SerializeField] private float baseFrictionForce = 0.5f;
     [SerializeField] private float movementDeadzone = 0.01f;
@@ -28,11 +27,11 @@ public class PlayerMovement : MonoBehaviour
     [Header("Slide Parameters")]
     [SerializeField] private float baseHeight = 2.0f;
     [SerializeField] private float slideHeight = 1.0f;
+    [SerializeField] private float startTransitionTime = 1.0f;
+    [SerializeField] private float endTransitionTime = 1.0f;
     [SerializeField] private float slideFriction = 1.0f;
-    [SerializeField] private float transissionTime = 1.0f;
     [SerializeField] private float slideStartThreshold = 5.0f;
     [SerializeField] private float slideStopThreshold = 1.0f;
-    [SerializeField] private float slideCameraTilt = 1.5f;
 
     [Header("Look Paramaters")]
     [SerializeField] private float mouseSensitivity = 2.0f;
@@ -40,6 +39,13 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Grounded")]
     [SerializeField] private LayerMask groundMask;
+
+    [Header("Camera Effects")]
+    [SerializeField] private float slideCamTilt = -2.0f;
+    [SerializeField] private float startSlideTiltSpeed = 0.1f;
+    [SerializeField] private float endSlideTiltSpeed = 0.1f;
+    [SerializeField] private float walkCamTilt = 0.5f;
+    [SerializeField] private float walkTiltSpeed = 0.1f;
 
 
     //Private varaibles to help with movement logic
@@ -52,7 +58,6 @@ public class PlayerMovement : MonoBehaviour
     private float frictionForce;
     private bool grounded;
     private bool doCamEffects = true;
-    private bool sprinting = false;
     private bool sliding = false;
     private float maxWalkSpeed;
     private float maxAirWalkSpeed;
@@ -63,7 +68,7 @@ public class PlayerMovement : MonoBehaviour
         mainCam = Camera.main;
         velocity = Vector3.zero;
         camEffects = GetComponent<CameraEffects>();
-        if(camEffects == null)
+        if (camEffects == null)
         {
             Debug.LogWarning("No Camera Effects Script Detected");
             doCamEffects = false;
@@ -90,7 +95,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 horizontalVel = new Vector3(velocity.x, 0, velocity.z);
         HandleJumping();
-        HandleSprinting();
         HandleSliding(ref horizontalVel);
         if (grounded)
         {
@@ -98,7 +102,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 GroundAcceleration(ref horizontalVel);
             }
-            
+
             if (playerInputHandler.moveInput.magnitude == 0 || horizontalVel.magnitude > maxWalkSpeed || sliding)
             {
                 ApplyFriction(ref horizontalVel);
@@ -115,11 +119,11 @@ public class PlayerMovement : MonoBehaviour
         characterController.Move(velocity * Time.deltaTime);
     }
 
-    private void GroundAcceleration(ref Vector3 horizontalVel) 
+    private void GroundAcceleration(ref Vector3 horizontalVel)
     {
         Vector3 accelerationVector = (transform.right * playerInputHandler.moveInput.x + transform.forward * playerInputHandler.moveInput.y) * acceleration * Time.deltaTime;
         float hVMagnitude = horizontalVel.magnitude;
-        
+
         horizontalVel += accelerationVector;
         if (hVMagnitude <= maxWalkSpeed)
         {
@@ -133,10 +137,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void ApplyFriction(ref Vector3 horizontalVel) 
+    private void ApplyFriction(ref Vector3 horizontalVel)
     {
         horizontalVel = horizontalVel * (1 - (frictionForce * Time.deltaTime));
-        if(horizontalVel.magnitude < movementDeadzone) 
+        if (horizontalVel.magnitude < movementDeadzone)
         {
             horizontalVel = Vector3.zero;
         }
@@ -159,23 +163,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void HandleSprinting()
-    {
-        if (playerInputHandler.sprintTriggered)
-        {
-            sprinting = !sprinting;
-            if (sprinting)
-            {
-                maxWalkSpeed *= sprintMultiplier;
-            }
-            else
-            {
-                maxWalkSpeed = baseMaxWalkSpeed;
-            }
-            playerInputHandler.sprintTriggered = false;
-        }
-    }
-
     //checks grounded and jump inputs
     private void HandleJumping()
     {
@@ -191,7 +178,7 @@ public class PlayerMovement : MonoBehaviour
                 if (sliding)
                 {
                     characterController.height = baseHeight;
-                    if(doCamEffects)
+                    if (doCamEffects)
                     {
                         StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
                     }
@@ -199,7 +186,8 @@ public class PlayerMovement : MonoBehaviour
                     frictionForce = baseFrictionForce;
                 }
             }
-        }else
+        }
+        else
         {
             velocity.y += Physics.gravity.y * gravityMultiplier * Time.deltaTime;
         }
@@ -209,20 +197,20 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
-            StartCoroutine(HandleCrouching(characterController.height, slideHeight, transissionTime));
-            if(doCamEffects)
+            StartCoroutine(HandleCrouching(characterController.height, slideHeight, startTransitionTime));
+            if (doCamEffects)
             {
-                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCameraTilt, 0.3f));
+                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCamTilt, startSlideTiltSpeed));
             }
             sliding = true;
             frictionForce = slideFriction;
         }
         else if (!playerInputHandler.slideTriggered && sliding || horizontalVel.magnitude < slideStopThreshold && sliding)
         {
-            StartCoroutine(HandleCrouching(characterController.height, baseHeight, transissionTime));
-            if(doCamEffects)
+            StartCoroutine(HandleCrouching(characterController.height, baseHeight, endTransitionTime));
+            if (doCamEffects)
             {
-                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.3f));
+                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, endSlideTiltSpeed));
             }
             sliding = false;
             frictionForce = baseFrictionForce;
@@ -233,15 +221,16 @@ public class PlayerMovement : MonoBehaviour
     {
         float counter = 0.0f;
 
-        while (counter < duration){
+        while (counter < duration)
+        {
             counter += Time.unscaledDeltaTime;
             characterController.height = Mathf.Lerp(startHeight, endHeight, counter / duration);
-            yield return null; 
+            yield return null;
         }
     }
 
     private void HandleRotation()
-    { 
+    {
         float mouseXRotation = playerInputHandler.lookInput.x * mouseSensitivity * Time.deltaTime;
         transform.Rotate(0, mouseXRotation, 0);
 

@@ -12,7 +12,6 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction lookAction;
     private InputAction moveAction;
     private InputAction jumpAction;
-    private InputAction sprintAction;
     private InputAction slideAction;
 
     //input values
@@ -21,7 +20,6 @@ public class PlayerInputHandler : MonoBehaviour
     public Vector2 lookInput { get; private set; }
     public bool jumpTriggered { get; private set; }
     public bool slideTriggered { get; private set; }
-    public bool sprintTriggered;
 
     public static PlayerInputHandler instance { get; private set; }
 
@@ -40,7 +38,6 @@ public class PlayerInputHandler : MonoBehaviour
         moveAction = playerControls.FindActionMap("ground").FindAction("move");
         lookAction = playerControls.FindActionMap("ground").FindAction("look");
         jumpAction = playerControls.FindActionMap("ground").FindAction("jump");
-        sprintAction = playerControls.FindActionMap("ground").FindAction("sprint");
         slideAction = playerControls.FindActionMap("ground").FindAction("slide");
 
         RegisterInputActions();
@@ -57,8 +54,6 @@ public class PlayerInputHandler : MonoBehaviour
         jumpAction.performed += context => jumpTriggered = true;
         jumpAction.canceled += context => jumpTriggered = false;
 
-        sprintAction.performed += context => sprintTriggered = true;
-
         slideAction.performed += context => slideTriggered = true;
         slideAction.canceled += context => slideTriggered = false;
     }
@@ -73,7 +68,6 @@ public class PlayerInputHandler : MonoBehaviour
         moveAction.Enable();
         lookAction.Enable();
         jumpAction.Enable();
-        sprintAction.Enable();
         slideAction.Enable();
     }
 
@@ -82,7 +76,6 @@ public class PlayerInputHandler : MonoBehaviour
         moveAction.Disable();
         lookAction.Disable();
         jumpAction.Disable();
-        sprintAction.Disable();
         slideAction.Disable();
     }
 }

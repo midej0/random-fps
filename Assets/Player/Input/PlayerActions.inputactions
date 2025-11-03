@@ -34,15 +34,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "sprint",
-                    "type": "Button",
-                    "id": "6ef11f69-eca6-4397-b6e9-f1d767682aa4",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "slide",
                     "type": "Button",
                     "id": "d6e147e8-788d-4416-a7de-69ef7df4256f",
@@ -132,19 +123,8 @@
                 },
                 {
                     "name": "",
-                    "id": "9f037f0c-1477-4df5-9931-2e5f52e64da7",
-                    "path": "<Keyboard>/shift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "sprint",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "5b3db998-ac0d-4faa-a1d9-9b92698b8c9b",
-                    "path": "<Keyboard>/ctrl",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

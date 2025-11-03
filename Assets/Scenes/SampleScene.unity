@@ -500,8 +500,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   acceleration: 150
-  sprintMultiplier: 1.5
-  baseMaxWalkSpeed: 5
+  baseMaxWalkSpeed: 7.5
   baseFrictionForce: 10
   movementDeadzone: 0.01
   airAcceleration: 50
@@ -510,8 +509,9 @@ MonoBehaviour:
   jumpForce: 5
   baseHeight: 2
   slideHeight: 1
+  startTransissionTime: 0.075
+  endTransissionTime: 0.15
   slideFriction: 1
-  transissionTime: 0.1
   slideStartThreshold: 5
   slideStopThreshold: 1.5
   mouseSensitivity: 1000
@@ -519,6 +519,11 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 64
+  slideCamTilt: -2
+  startSlideTiltSpeed: 0.15
+  endSlideTiltSpeed: 0.2
+  walkCamTilt: 1
+  walkTiltSpeed: 0.1
 --- !u!114 &731465029
 MonoBehaviour:
   m_ObjectHideFlags: 0
