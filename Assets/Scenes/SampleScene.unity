@@ -502,15 +502,15 @@ MonoBehaviour:
   acceleration: 150
   baseMaxWalkSpeed: 7.5
   baseFrictionForce: 10
-  movementDeadzone: 0.01
+  minVelocity: 0.01
   airAcceleration: 50
   baseMaxAirWalkSpeed: 3
   gravityMultiplier: 1.5
   jumpForce: 5
   baseHeight: 2
   slideHeight: 1
-  startTransissionTime: 0.075
-  endTransissionTime: 0.15
+  startTransitionTime: 0.075
+  endTransitionTime: 0.15
   slideFriction: 1
   slideStartThreshold: 5
   slideStopThreshold: 1.5
@@ -832,7 +832,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerControls: {fileID: -944628639613478452, guid: 286421279114e4b00a4dc2429a8d27b5, type: 3}
-  sprintTriggered: 0
 --- !u!4 &1755452690
 Transform:
   m_ObjectHideFlags: 0

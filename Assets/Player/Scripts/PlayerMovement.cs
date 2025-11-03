@@ -14,7 +14,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float acceleration = 10.0f;
     [SerializeField] private float baseMaxWalkSpeed = 10.0f;
     [SerializeField] private float baseFrictionForce = 0.5f;
-    [SerializeField] private float movementDeadzone = 0.01f;
+    [SerializeField] private float minVelocity = 0.01f;
 
     [Header("Air Movement Parameters")]
     [SerializeField] private float airAcceleration = 30.0f;
@@ -27,15 +27,18 @@ public class PlayerMovement : MonoBehaviour
     [Header("Slide Parameters")]
     [SerializeField] private float baseHeight = 2.0f;
     [SerializeField] private float slideHeight = 1.0f;
-    [SerializeField] private float startTransitionTime = 1.0f;
-    [SerializeField] private float endTransitionTime = 1.0f;
+    [SerializeField] private float startTransitionTime = 0.05f;
+    [SerializeField] private float endTransitionTime = 0.15f;
     [SerializeField] private float slideFriction = 1.0f;
+    [SerializeField] private float slideBoost = 1.5f;
+    [SerializeField] private float maxSlideBoost = 15.0f;
     [SerializeField] private float slideStartThreshold = 5.0f;
     [SerializeField] private float slideStopThreshold = 1.0f;
 
+    [Header("Wall Running")]
+
     [Header("Look Paramaters")]
     [SerializeField] private float mouseSensitivity = 2.0f;
-    [SerializeField] private float upDownRange = 90.0f;
 
     [Header("Grounded")]
     [SerializeField] private LayerMask groundMask;
@@ -56,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     private float verticalRotation;
     private float frictionForce;
+    private float upDownRange = 90.0f;
     private bool grounded;
     private bool doCamEffects = true;
     private bool sliding = false;
@@ -140,7 +144,7 @@ public class PlayerMovement : MonoBehaviour
     private void ApplyFriction(ref Vector3 horizontalVel)
     {
         horizontalVel = horizontalVel * (1 - (frictionForce * Time.deltaTime));
-        if (horizontalVel.magnitude < movementDeadzone)
+        if (horizontalVel.magnitude < minVelocity)
         {
             horizontalVel = Vector3.zero;
         }
@@ -197,11 +201,16 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
+            Vector3 newVel = horizontalVel *= 1.5f; 
             StartCoroutine(HandleCrouching(characterController.height, slideHeight, startTransitionTime));
             if (doCamEffects)
             {
                 StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCamTilt, startSlideTiltSpeed));
             }
+            if(newVel.magnitude <= maxSlideBoost)
+            {
+                horizontalVel = newVel;
+            } 
             sliding = true;
             frictionForce = slideFriction;
         }
