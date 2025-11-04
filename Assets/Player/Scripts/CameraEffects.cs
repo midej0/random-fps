@@ -21,6 +21,7 @@ public class CameraEffects : MonoBehaviour
         {
             counter += Time.unscaledDeltaTime;
             cameraTilt = Mathf.Lerp(startAngle, endAngle, counter / duration);
+            mainCam.transform.localRotation = Quaternion.Euler(0,0, cameraTilt);
             yield return null;
         }
     }

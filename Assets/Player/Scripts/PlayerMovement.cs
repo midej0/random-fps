@@ -53,7 +53,7 @@ public class PlayerMovement : MonoBehaviour
 
     //Private varaibles to help with movement logic
     private CharacterController characterController;
-    private Camera mainCam;
+    private GameObject camHolder;
     private CameraEffects camEffects;
     private PlayerInputHandler playerInputHandler;
     private Vector3 velocity;
@@ -69,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
-        mainCam = Camera.main;
+        camHolder = GameObject.FindGameObjectWithTag("cameraHolder");
         velocity = Vector3.zero;
         camEffects = GetComponent<CameraEffects>();
         if (camEffects == null)
@@ -201,7 +201,6 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
-            Vector3 newVel = horizontalVel *= 1.5f;
             StartCoroutine(HandleCrouching(characterController.height, slideHeight, startTransitionTime));
             if (doCamEffects)
             {
@@ -211,15 +210,17 @@ public class PlayerMovement : MonoBehaviour
                     velDir = 360 - velDir;
                 }
 
-                if(velDir <= 170 && velDir >= 10)
+                if (velDir <= 170 && velDir >= 10)
                 {
                     StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCamTilt, startSlideTiltSpeed));
                 }
                 else
                 {
-                   StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -slideCamTilt, startSlideTiltSpeed));
+                    StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -slideCamTilt, startSlideTiltSpeed));
                 }
             }
+
+            Vector3 newVel = horizontalVel * slideBoost;
             if (newVel.magnitude <= maxSlideBoost)
             {
                 horizontalVel = newVel;
@@ -258,13 +259,6 @@ public class PlayerMovement : MonoBehaviour
 
         verticalRotation -= playerInputHandler.lookInput.y * mouseSensitivity * Time.deltaTime;
         verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
-        if (doCamEffects)
-        {
-            mainCam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, camEffects.cameraTilt);
-        }
-        else
-        {
-            mainCam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
-        }
+        camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
     }
 }
