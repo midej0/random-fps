@@ -10,21 +10,21 @@ using UnityEngine.TextCore.Text;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Ground Movement Parameters")]
+    [Header("Ground Movement")]
     [SerializeField] private float acceleration = 10.0f;
     [SerializeField] private float baseMaxWalkSpeed = 10.0f;
     [SerializeField] private float baseFrictionForce = 0.5f;
     [SerializeField] private float minVelocity = 0.01f;
 
-    [Header("Air Movement Parameters")]
+    [Header("Air Movement")]
     [SerializeField] private float airAcceleration = 30.0f;
     [SerializeField] private float baseMaxAirWalkSpeed = 10.0f;
     [SerializeField] private float gravityMultiplier = 1.0f;
 
-    [Header("Jump Parameters")]
+    [Header("Jump")]
     [SerializeField] private float jumpForce = 50.0f;
 
-    [Header("Slide Parameters")]
+    [Header("Slide")]
     [SerializeField] private float baseHeight = 2.0f;
     [SerializeField] private float slideHeight = 1.0f;
     [SerializeField] private float startTransitionTime = 0.05f;
@@ -201,16 +201,29 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
-            Vector3 newVel = horizontalVel *= 1.5f; 
+            Vector3 newVel = horizontalVel *= 1.5f;
             StartCoroutine(HandleCrouching(characterController.height, slideHeight, startTransitionTime));
             if (doCamEffects)
             {
-                StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCamTilt, startSlideTiltSpeed));
+                float velDir = Vector3.Angle(horizontalVel.normalized, this.transform.forward);
+                if (Vector3.Cross(this.transform.forward, horizontalVel.normalized).y < 0)
+                {
+                    velDir = 360 - velDir;
+                }
+
+                if(velDir <= 170 && velDir >= 10)
+                {
+                    StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, slideCamTilt, startSlideTiltSpeed));
+                }
+                else
+                {
+                   StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -slideCamTilt, startSlideTiltSpeed));
+                }
             }
-            if(newVel.magnitude <= maxSlideBoost)
+            if (newVel.magnitude <= maxSlideBoost)
             {
                 horizontalVel = newVel;
-            } 
+            }
             sliding = true;
             frictionForce = slideFriction;
         }

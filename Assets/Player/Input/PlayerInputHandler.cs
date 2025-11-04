@@ -60,7 +60,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void PrintMessage()
     {
-        Debug.Log("Action performed! :3");
+        Debug.Log("Action performed!s");
     }
 
     void OnEnable()
