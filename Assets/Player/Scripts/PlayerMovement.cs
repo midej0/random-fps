@@ -36,6 +36,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float slideStopThreshold = 1.0f;
 
     [Header("Wall Running")]
+    [SerializeField] private float detectionRange;
+
 
     [Header("Look Paramaters")]
     [SerializeField] private float mouseSensitivity = 2.0f;
@@ -47,8 +49,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float slideCamTilt = -2.0f;
     [SerializeField] private float startSlideTiltSpeed = 0.1f;
     [SerializeField] private float endSlideTiltSpeed = 0.1f;
-    [SerializeField] private float walkCamTilt = 0.5f;
-    [SerializeField] private float walkTiltSpeed = 0.1f;
 
 
     //Private varaibles to help with movement logic
@@ -100,6 +100,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 horizontalVel = new Vector3(velocity.x, 0, velocity.z);
         HandleJumping();
         HandleSliding(ref horizontalVel);
+        HandleWallrunning();
         if (grounded)
         {
             if (!sliding)
@@ -204,7 +205,7 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(HandleCrouching(characterController.height, slideHeight, startTransitionTime));
             if (doCamEffects)
             {
-                float velDir = Vector3.Angle(horizontalVel.normalized, this.transform.forward);
+                float velDir = Vector3.Angle(horizontalVel.normalized, transform.forward);
                 if (Vector3.Cross(this.transform.forward, horizontalVel.normalized).y < 0)
                 {
                     velDir = 360 - velDir;
@@ -248,8 +249,16 @@ public class PlayerMovement : MonoBehaviour
         {
             counter += Time.unscaledDeltaTime;
             characterController.height = Mathf.Lerp(startHeight, endHeight, counter / duration);
+            camHolder.transform.localPosition = new Vector3(0, characterController.height / 2 - 0.35f, 0);
             yield return null;
         }
+    }
+
+    private void HandleWallrunning()
+    {
+        Vector3 lowerStartPos = transform.position;
+        lowerStartPos.y -= 1;
+        Debug.DrawLine(lowerStartPos, lowerStartPos + transform.right * detectionRange);
     }
 
     private void HandleRotation()
