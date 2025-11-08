@@ -210,10 +210,8 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = 0f;
             if (playerInputHandler.jumpTriggered)
             {
-                wallRunning = false;
-                maxWalkSpeed = baseMaxWalkSpeed;
+                StopWallrunning();
                 velocity.y = jumpForce;
-                lastWallrunTime = Time.time;
             }
         }
         else
@@ -298,6 +296,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleWallrunning(float speed)
     {
+        bool wallDetected = false;
+
         Vector3 lowerStartPos = transform.position;
         lowerStartPos.y -= characterController.height / 2f;
 
@@ -309,31 +309,33 @@ public class PlayerMovement : MonoBehaviour
 
         if (Physics.Raycast(higherStartPos, transform.right, out higherHit, detectionRange, groundMask) && Physics.Raycast(lowerStartPos, transform.right, out lowerHit, detectionRange, groundMask))
         {
-            Debug.Log(Vector3.Cross(higherHit.normal, transform.right).y);
-            Debug.Log(180 - Vector3.Angle(higherHit.normal, transform.right));
+            wallDetected = true;
+            //Debug.Log(Vector3.Cross(higherHit.normal, transform.right).y);
+            //Debug.Log(180 - Vector3.Angle(higherHit.normal, transform.right));
             if (speed >= 5 && !grounded && !wallRunning)
             {
-                InitiateWallRunning(higherHit, true);
+                StartWallrunning(higherHit, true);
             }
         }
 
         if (Physics.Raycast(higherStartPos, -transform.right, out higherHit, detectionRange, groundMask) && Physics.Raycast(lowerStartPos, -transform.right, out lowerHit, detectionRange, groundMask))
         {
-            Debug.Log(Vector3.Cross(higherHit.normal, -transform.right).y);
-            Debug.Log(180 - Vector3.Angle(higherHit.normal, -transform.right));
+            wallDetected = true;
+            //Debug.Log(Vector3.Cross(higherHit.normal, -transform.right).y);
+            //Debug.Log(180 - Vector3.Angle(higherHit.normal, -transform.right));
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                InitiateWallRunning(higherHit, false);
+                StartWallrunning(higherHit, false);
             }
         }
-        else
+
+        if(wallRunning && !wallDetected)
         {
-            Debug.DrawLine(higherStartPos, higherStartPos + transform.right * -detectionRange, Color.red);
-            Debug.DrawLine(lowerStartPos, lowerStartPos + transform.right * -detectionRange, Color.red);
+            StopWallrunning();
         }
     }
-    
-    private void InitiateWallRunning(RaycastHit hit, bool right)
+
+    private void StartWallrunning(RaycastHit hit, bool right)
     {
         wallRunning = true;
         maxWalkSpeed = wallRunSpeed;
@@ -359,6 +361,13 @@ public class PlayerMovement : MonoBehaviour
                 transform.Rotate(0, 180 - Vector3.Angle(hit.normal, -transform.right), 0);
             }
         }
+    }
+    
+    private void StopWallrunning()
+    {
+        wallRunning = false;
+        maxWalkSpeed = baseMaxWalkSpeed;
+        lastWallrunTime = Time.time;
     }
 
     private void HandleRotation()
