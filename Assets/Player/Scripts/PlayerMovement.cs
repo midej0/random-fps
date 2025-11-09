@@ -47,6 +47,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float startSlideTiltSpeed = 0.1f;
     [SerializeField] private float endSlideTiltSpeed = 0.1f;
     [SerializeField] private float wallrunCamTilt = 90.0f;
+    [SerializeField] private float wallrunTiltSpeed = 0.2f;
 
 
     //Private varaibles to help with movement logic
@@ -57,8 +58,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     private float verticalRotation;
     private float horizontalRotation;
-    private float minHR;
-    private float maxHR;
     private float frictionForce;
     private float upDownRange = 90.0f;
     private float maxWalkSpeed;
@@ -357,6 +356,7 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -wallrunCamTilt, startSlideTiltSpeed));
         }
         horizontalRotation = camHolder.transform.localEulerAngles.y;
+        horizontalRotation = (horizontalRotation > 180) ? horizontalRotation - 360 : horizontalRotation;
     }
 
     private void StopWallrunning()
@@ -381,7 +381,7 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             horizontalRotation += playerInputHandler.lookInput.x * mouseSensitivity * Time.deltaTime;
-
+            horizontalRotation = Mathf.Clamp(horizontalRotation, -90, 90);
             camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0);
         }
     }
