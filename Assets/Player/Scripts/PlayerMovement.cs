@@ -1,17 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEditor;
-using UnityEditor.Performance.ProfileAnalyzer;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
-using Vector3 = UnityEngine.Vector3;
-using Quaternion = UnityEngine.Quaternion;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -53,9 +43,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundMask;
 
     [Header("Camera Effects")]
-    [SerializeField] private float slideCamTilt = -2.0f;
+    [SerializeField] private float slideCamTilt = 2.0f;
     [SerializeField] private float startSlideTiltSpeed = 0.1f;
     [SerializeField] private float endSlideTiltSpeed = 0.1f;
+    [SerializeField] private float wallrunCamTilt = 90.0f;
 
 
     //Private varaibles to help with movement logic
@@ -65,12 +56,15 @@ public class PlayerMovement : MonoBehaviour
     private PlayerInputHandler playerInputHandler;
     private Vector3 velocity;
     private float verticalRotation;
+    private float horizontalRotation;
+    private float minHR;
+    private float maxHR;
     private float frictionForce;
     private float upDownRange = 90.0f;
     private float maxWalkSpeed;
     private float maxAirWalkSpeed;
     private float lastWallrunTime;
-    private float wallRunCooldown = 0.1f;
+    private float wallRunCooldown = 0.5f;
     private bool grounded;
     private bool wallRunning = false;
     private bool sliding = false;
@@ -122,7 +116,8 @@ public class PlayerMovement : MonoBehaviour
             {
                 ApplyFriction(ref horizontalVel);
             }
-        }else if (wallRunning)
+        }
+        else if (wallRunning)
         {
             WallrunMovement(ref horizontalVel);
         }
@@ -198,7 +193,7 @@ public class PlayerMovement : MonoBehaviour
                     characterController.height = baseHeight;
                     if (doCamEffects)
                     {
-                        StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
+                        StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, endSlideTiltSpeed));
                     }
                     sliding = false;
                     frictionForce = baseFrictionForce;
@@ -312,7 +307,7 @@ public class PlayerMovement : MonoBehaviour
             wallDetected = true;
             //Debug.Log(Vector3.Cross(higherHit.normal, transform.right).y);
             //Debug.Log(180 - Vector3.Angle(higherHit.normal, transform.right));
-            if (speed >= 5 && !grounded && !wallRunning)
+            if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
                 StartWallrunning(higherHit, true);
             }
@@ -329,7 +324,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        if(wallRunning && !wallDetected)
+        if (wallRunning && !wallDetected)
         {
             StopWallrunning();
         }
@@ -341,44 +336,53 @@ public class PlayerMovement : MonoBehaviour
         maxWalkSpeed = wallRunSpeed;
         if (right)
         {
+            float rotDeg = 180f - Vector3.Angle(hit.normal, transform.right);
             if (Vector3.Cross(hit.normal, transform.right).y < 0)
             {
-                transform.Rotate(0, (180 - Vector3.Angle(hit.normal, transform.right)) * -1f, 0);
+                rotDeg *= -1f;
             }
-            else
-            {
-                transform.Rotate(0, 180 - Vector3.Angle(hit.normal, transform.right), 0);
-            }
+            transform.Rotate(0, rotDeg, 0);
+            camHolder.transform.Rotate(0, rotDeg * -1f, 0);
+            StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, wallrunCamTilt, startSlideTiltSpeed));
         }
         else
         {
+            float rotDeg = 180f - Vector3.Angle(hit.normal, -transform.right);
             if (Vector3.Cross(hit.normal, -transform.right).y < 0)
             {
-                transform.Rotate(0, (180 - Vector3.Angle(hit.normal, -transform.right)) * -1f, 0);
+                rotDeg *= -1f;
             }
-            else
-            {
-                transform.Rotate(0, 180 - Vector3.Angle(hit.normal, -transform.right), 0);
-            }
+            transform.Rotate(0, rotDeg, 0);
+            camHolder.transform.Rotate(0, rotDeg * -1f, 0);
+            StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -wallrunCamTilt, startSlideTiltSpeed));
         }
+        horizontalRotation = camHolder.transform.localEulerAngles.y;
     }
-    
+
     private void StopWallrunning()
     {
         wallRunning = false;
         maxWalkSpeed = baseMaxWalkSpeed;
         lastWallrunTime = Time.time;
+        transform.Rotate(0, horizontalRotation, 0);
+        StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
     }
 
     private void HandleRotation()
     {
         verticalRotation -= playerInputHandler.lookInput.y * mouseSensitivity * Time.deltaTime;
         verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
-        camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
         if (!wallRunning)
         {
+            camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
             float mouseXRotation = playerInputHandler.lookInput.x * mouseSensitivity * Time.deltaTime;
             transform.Rotate(0, mouseXRotation, 0);
+        }
+        else
+        {
+            horizontalRotation += playerInputHandler.lookInput.x * mouseSensitivity * Time.deltaTime;
+
+            camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0);
         }
     }
 }
