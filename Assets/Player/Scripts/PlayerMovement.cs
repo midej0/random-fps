@@ -94,7 +94,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(velocity);
         HandleRotation();
         HandleMovement();
     }
@@ -152,7 +151,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void ApplyFriction(ref Vector3 horizontalVel)
     {
-        horizontalVel = horizontalVel * (1 - (frictionForce * Time.deltaTime));
+        horizontalVel *= 1 - (frictionForce * Time.deltaTime);
         if (horizontalVel.magnitude < minVelocity)
         {
             horizontalVel = Vector3.zero;
@@ -184,7 +183,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (grounded)
         {
-            velocity.y = -0.5f;
+            velocity.y = (velocity.y < 0) ? -0.5f : velocity.y;
             if (playerInputHandler.jumpTriggered)
             {
                 velocity.y = jumpForce;
@@ -292,6 +291,7 @@ public class PlayerMovement : MonoBehaviour
     private void HandleWallrunning(float speed)
     {
         bool wallDetected = false;
+        //bool lWallDetected = false;
 
         Vector3 lowerStartPos = transform.position;
         lowerStartPos.y -= characterController.height / 2f;
@@ -309,7 +309,7 @@ public class PlayerMovement : MonoBehaviour
             //Debug.Log(180 - Vector3.Angle(higherHit.normal, transform.right));
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                StartWallrunning(higherHit, true);
+                StartWallrunning(higherHit, true, speed);
             }
         }
 
@@ -320,7 +320,7 @@ public class PlayerMovement : MonoBehaviour
             //Debug.Log(180 - Vector3.Angle(higherHit.normal, -transform.right));
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                StartWallrunning(higherHit, false);
+                StartWallrunning(higherHit, false, speed);
             }
         }
 
@@ -330,7 +330,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void StartWallrunning(RaycastHit hit, bool right)
+    private void StartWallrunning(RaycastHit hit, bool right, float speed)
     {
         wallRunning = true;
         maxWalkSpeed = wallRunSpeed;
@@ -343,7 +343,7 @@ public class PlayerMovement : MonoBehaviour
             }
             transform.Rotate(0, rotDeg, 0);
             camHolder.transform.Rotate(0, rotDeg * -1f, 0);
-            StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, wallrunCamTilt, startSlideTiltSpeed));
+            StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, wallrunCamTilt, wallrunTiltSpeed));
         }
         else
         {
@@ -354,8 +354,10 @@ public class PlayerMovement : MonoBehaviour
             }
             transform.Rotate(0, rotDeg, 0);
             camHolder.transform.Rotate(0, rotDeg * -1f, 0);
-            StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -wallrunCamTilt, startSlideTiltSpeed));
+            StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -wallrunCamTilt, wallrunTiltSpeed));
         }
+        Debug.Log(velocity);
+        Debug.Log(transform.forward * speed);
         horizontalRotation = camHolder.transform.localEulerAngles.y;
         horizontalRotation = (horizontalRotation > 180) ? horizontalRotation - 360 : horizontalRotation;
     }
@@ -366,7 +368,7 @@ public class PlayerMovement : MonoBehaviour
         maxWalkSpeed = baseMaxWalkSpeed;
         lastWallrunTime = Time.time;
         transform.Rotate(0, horizontalRotation, 0);
-        camHolder.transform.localRotation = Quaternion.Euler(0,0,0);
+        camHolder.transform.localRotation = Quaternion.Euler(0, 0, 0);
         StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
     }
 
@@ -386,5 +388,10 @@ public class PlayerMovement : MonoBehaviour
             horizontalRotation = Mathf.Clamp(horizontalRotation, -90, 90);
             camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0);
         }
+    }
+
+    public void AddVelocity(Vector3 vel)
+    {
+        velocity += vel;
     }
 }
