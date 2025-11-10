@@ -131,6 +131,17 @@
                     "action": "slide",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "44ae037e-c815-4644-a6a3-74cd14139308",
+                    "path": "<Keyboard>/ctrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "slide",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

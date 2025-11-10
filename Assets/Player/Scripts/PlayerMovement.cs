@@ -94,6 +94,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log(velocity);
         HandleRotation();
         HandleMovement();
     }
@@ -365,6 +366,7 @@ public class PlayerMovement : MonoBehaviour
         maxWalkSpeed = baseMaxWalkSpeed;
         lastWallrunTime = Time.time;
         transform.Rotate(0, horizontalRotation, 0);
+        camHolder.transform.localRotation = Quaternion.Euler(0,0,0);
         StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
     }
 
