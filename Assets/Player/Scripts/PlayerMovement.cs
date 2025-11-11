@@ -103,7 +103,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 horizontalVel = new Vector3(velocity.x, 0, velocity.z);
         HandleJumping();
         HandleSliding(ref horizontalVel);
-        HandleWallrunning(horizontalVel.magnitude);
+        HandleWallrunning(ref horizontalVel);
         if (grounded)
         {
             if (!sliding)
@@ -288,8 +288,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void HandleWallrunning(float speed)
+    private void HandleWallrunning(ref Vector3 horizontalVel)
     {
+        float speed = horizontalVel.magnitude;
         bool wallDetected = false;
         //bool lWallDetected = false;
 
@@ -305,22 +306,20 @@ public class PlayerMovement : MonoBehaviour
         if (Physics.Raycast(higherStartPos, transform.right, out higherHit, detectionRange, groundMask) && Physics.Raycast(lowerStartPos, transform.right, out lowerHit, detectionRange, groundMask))
         {
             wallDetected = true;
-            //Debug.Log(Vector3.Cross(higherHit.normal, transform.right).y);
-            //Debug.Log(180 - Vector3.Angle(higherHit.normal, transform.right));
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                StartWallrunning(higherHit, true, speed);
+                StartWallrunning(higherHit, ref horizontalVel, true);
+                Debug.Log(velocity + "right");
             }
         }
 
         if (Physics.Raycast(higherStartPos, -transform.right, out higherHit, detectionRange, groundMask) && Physics.Raycast(lowerStartPos, -transform.right, out lowerHit, detectionRange, groundMask))
         {
             wallDetected = true;
-            //Debug.Log(Vector3.Cross(higherHit.normal, -transform.right).y);
-            //Debug.Log(180 - Vector3.Angle(higherHit.normal, -transform.right));
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                StartWallrunning(higherHit, false, speed);
+                StartWallrunning(higherHit, ref horizontalVel, false);
+                Debug.Log(velocity + "left");
             }
         }
 
@@ -330,7 +329,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void StartWallrunning(RaycastHit hit, bool right, float speed)
+    private void StartWallrunning(RaycastHit hit, ref Vector3 horizontalVel, bool right)
     {
         wallRunning = true;
         maxWalkSpeed = wallRunSpeed;
@@ -356,8 +355,7 @@ public class PlayerMovement : MonoBehaviour
             camHolder.transform.Rotate(0, rotDeg * -1f, 0);
             StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, -wallrunCamTilt, wallrunTiltSpeed));
         }
-        Debug.Log(velocity);
-        Debug.Log(transform.forward * speed);
+        horizontalVel = transform.forward * horizontalVel.magnitude;
         horizontalRotation = camHolder.transform.localEulerAngles.y;
         horizontalRotation = (horizontalRotation > 180) ? horizontalRotation - 360 : horizontalRotation;
     }
@@ -369,7 +367,7 @@ public class PlayerMovement : MonoBehaviour
         lastWallrunTime = Time.time;
         transform.Rotate(0, horizontalRotation, 0);
         camHolder.transform.localRotation = Quaternion.Euler(0, 0, 0);
-        StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, 0.1f));
+        StartCoroutine(camEffects.TiltCam(camEffects.cameraTilt, 0f, wallrunTiltSpeed));
     }
 
     private void HandleRotation()
@@ -389,7 +387,7 @@ public class PlayerMovement : MonoBehaviour
             camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0);
         }
     }
-
+    
     public void AddVelocity(Vector3 vel)
     {
         velocity += vel;

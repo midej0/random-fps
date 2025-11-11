@@ -624,7 +624,7 @@ GameObject:
   m_Component:
   - component: {fileID: 589396108734132007}
   - component: {fileID: 106043867647387679}
-  - component: {fileID: 3798298392023809859}
+  - component: {fileID: 8772965409557658665}
   m_Layer: 0
   m_Name: JumpPad
   m_TagString: Untagged
@@ -678,7 +678,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.43, y: 0.5, z: 1.97}
   m_Center: {x: 0, y: 0.16, z: 0}
---- !u!114 &3798298392023809859
+--- !u!114 &8772965409557658665
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -690,6 +690,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c33f84bd60834b78aab2695b3c79930, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  launchForce: 11
+  launchYForce: 15
 --- !u!1 &4600459712214150914
 GameObject:
   m_ObjectHideFlags: 0
