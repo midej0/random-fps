@@ -18,8 +18,8 @@ public class PlayerInputHandler : MonoBehaviour
     //movement values
     public Vector2 moveInput { get; private set; }
     public Vector2 lookInput { get; private set; }
-    public bool jumpTriggered { get; private set; }
     public bool slideTriggered { get; private set; }
+    public bool jumpTriggered;
 
     public static PlayerInputHandler instance { get; private set; }
 

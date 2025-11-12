@@ -203,8 +203,10 @@ public class PlayerMovement : MonoBehaviour
                     }
                     sliding = false;
                     frictionForce = baseFrictionForce;
+                    playerInputHandler.jumpTriggered = false;
                 }
             }
+            playerInputHandler.jumpTriggered = false;
         }
         else if (wallRunning)
         {
@@ -214,6 +216,7 @@ public class PlayerMovement : MonoBehaviour
                 StopWallrunning();
                 velocity.y = jumpForce;
                 horizontalVel = transform.forward * horizontalVel.magnitude;
+                playerInputHandler.jumpTriggered = false;
             }
         }
         else
