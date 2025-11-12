@@ -32,8 +32,10 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Wall Running")]
     [SerializeField] private float detectionRange;
-    [SerializeField] private float wallRunSpeed = 15;
-    [SerializeField] private LayerMask wallRunMask;
+    [SerializeField] private float maxWallrunSpeed = 15f;
+    [SerializeField] private float minWallrunSpeed = 9f;
+    [SerializeField] private float wallRunFriction = 1f;
+    [SerializeField] private LayerMask wallrunMask;
 
 
     [Header("Look Paramaters")]
@@ -56,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     private CameraEffects camEffects;
     private PlayerInputHandler playerInputHandler;
     private Vector3 velocity;
+    private Vector3 horizontalVel;
     private float verticalRotation;
     private float horizontalRotation;
     private float frictionForce;
@@ -100,29 +103,33 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector3 horizontalVel = new Vector3(velocity.x, 0, velocity.z);
+        horizontalVel = new Vector3(velocity.x, 0, velocity.z);
         HandleJumping();
-        HandleSliding(ref horizontalVel);
-        HandleWallrunning(ref horizontalVel);
+        HandleSliding();
+        HandleWallrunning();
         if (grounded)
         {
             if (!sliding)
             {
-                GroundAcceleration(ref horizontalVel);
+                GroundAcceleration();
             }
 
             if (playerInputHandler.moveInput.magnitude == 0 || horizontalVel.magnitude > maxWalkSpeed || sliding)
             {
-                ApplyFriction(ref horizontalVel);
+                ApplyFriction();
             }
         }
         else if (wallRunning)
         {
-            WallrunMovement(ref horizontalVel);
+            WallrunMovement();
+            if(playerInputHandler.moveInput.magnitude == 0)
+            {
+                ApplyFriction();
+            }
         }
         else
         {
-            AirAcceleration(ref horizontalVel);
+            AirAcceleration();
         }
 
         velocity.x = horizontalVel.x;
@@ -131,7 +138,7 @@ public class PlayerMovement : MonoBehaviour
         characterController.Move(velocity * Time.deltaTime);
     }
 
-    private void GroundAcceleration(ref Vector3 horizontalVel)
+    private void GroundAcceleration()
     {
         Vector3 accelerationVector = (transform.right * playerInputHandler.moveInput.x + transform.forward * playerInputHandler.moveInput.y) * acceleration * Time.deltaTime;
         float hVMagnitude = horizontalVel.magnitude;
@@ -149,7 +156,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void ApplyFriction(ref Vector3 horizontalVel)
+    private void ApplyFriction()
     {
         horizontalVel *= 1 - (frictionForce * Time.deltaTime);
         if (horizontalVel.magnitude < minVelocity)
@@ -158,7 +165,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void AirAcceleration(ref Vector3 horizontalVel)
+    private void AirAcceleration()
     {
         Vector3 accelerationVector = (transform.right * playerInputHandler.moveInput.x + transform.forward * playerInputHandler.moveInput.y) * airAcceleration * Time.deltaTime;
         float hVMagnitude = horizontalVel.magnitude;
@@ -206,6 +213,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 StopWallrunning();
                 velocity.y = jumpForce;
+                horizontalVel = transform.forward * horizontalVel.magnitude;
             }
         }
         else
@@ -214,7 +222,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void HandleSliding(ref Vector3 horizontalVel)
+    private void HandleSliding()
     {
         if (!sliding && playerInputHandler.slideTriggered && grounded && horizontalVel.magnitude > slideStartThreshold && velocity.y < 0)
         {
@@ -270,8 +278,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void WallrunMovement(ref Vector3 horizontalVel)
+    private void WallrunMovement()
     {
+        float speed = horizontalVel.magnitude;
         Vector3 accelerationVector = transform.forward * playerInputHandler.moveInput.y * acceleration * Time.deltaTime;
         float hVMagnitude = horizontalVel.magnitude;
 
@@ -286,9 +295,14 @@ public class PlayerMovement : MonoBehaviour
             horizontalVel += accelerationVector;
             horizontalVel = Vector3.ClampMagnitude(horizontalVel, hVMagnitude);
         }
+
+        if(speed < minWallrunSpeed)
+        {
+            StopWallrunning();
+        }
     }
 
-    private void HandleWallrunning(ref Vector3 horizontalVel)
+    private void HandleWallrunning()
     {
         float speed = horizontalVel.magnitude;
         bool wallDetected = false;
@@ -306,10 +320,10 @@ public class PlayerMovement : MonoBehaviour
         if (Physics.Raycast(higherStartPos, transform.right, out higherHit, detectionRange, groundMask) && Physics.Raycast(lowerStartPos, transform.right, out lowerHit, detectionRange, groundMask))
         {
             wallDetected = true;
+            
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                StartWallrunning(higherHit, ref horizontalVel, true);
-                Debug.Log(velocity + "right");
+                StartWallrunning(higherHit, true);
             }
         }
 
@@ -318,8 +332,7 @@ public class PlayerMovement : MonoBehaviour
             wallDetected = true;
             if (speed >= 5 && !grounded && !wallRunning && Time.time >= lastWallrunTime + wallRunCooldown)
             {
-                StartWallrunning(higherHit, ref horizontalVel, false);
-                Debug.Log(velocity + "left");
+                StartWallrunning(higherHit, false);
             }
         }
 
@@ -329,10 +342,11 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void StartWallrunning(RaycastHit hit, ref Vector3 horizontalVel, bool right)
+    private void StartWallrunning(RaycastHit hit, bool right)
     {
         wallRunning = true;
-        maxWalkSpeed = wallRunSpeed;
+        maxWalkSpeed = maxWallrunSpeed;
+        frictionForce = wallRunFriction;
         if (right)
         {
             float rotDeg = 180f - Vector3.Angle(hit.normal, transform.right);
@@ -364,6 +378,7 @@ public class PlayerMovement : MonoBehaviour
     {
         wallRunning = false;
         maxWalkSpeed = baseMaxWalkSpeed;
+        frictionForce = baseFrictionForce;
         lastWallrunTime = Time.time;
         transform.Rotate(0, horizontalRotation, 0);
         camHolder.transform.localRotation = Quaternion.Euler(0, 0, 0);

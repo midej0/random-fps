@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CameraEffects : MonoBehaviour
 {
-    public float cameraTilt = 0;
+    [HideInInspector] public float cameraTilt = 0;
 
     private Camera mainCam;
 
