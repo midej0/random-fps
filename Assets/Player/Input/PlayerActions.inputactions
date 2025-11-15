@@ -41,6 +41,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "use",
+                    "type": "Button",
+                    "id": "6b150910-2cfe-4965-8eb8-2e823f0dede2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -140,6 +149,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "slide",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fa726fd8-f13b-4306-9eca-f7916b3711a2",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "use",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

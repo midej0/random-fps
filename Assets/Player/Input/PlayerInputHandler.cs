@@ -13,12 +13,14 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction moveAction;
     private InputAction jumpAction;
     private InputAction slideAction;
+    private InputAction useAction;
 
     //input values
     //movement values
     public Vector2 moveInput { get; private set; }
     public Vector2 lookInput { get; private set; }
     public bool slideTriggered { get; private set; }
+    public bool isUsing;
     public bool jumpTriggered;
 
     public static PlayerInputHandler instance { get; private set; }
@@ -39,6 +41,7 @@ public class PlayerInputHandler : MonoBehaviour
         lookAction = playerControls.FindActionMap("ground").FindAction("look");
         jumpAction = playerControls.FindActionMap("ground").FindAction("jump");
         slideAction = playerControls.FindActionMap("ground").FindAction("slide");
+        useAction = playerControls.FindActionMap("ground").FindAction("use");
 
         RegisterInputActions();
     }
@@ -56,11 +59,14 @@ public class PlayerInputHandler : MonoBehaviour
 
         slideAction.performed += context => slideTriggered = true;
         slideAction.canceled += context => slideTriggered = false;
+
+        useAction.performed += context => isUsing = true;
+        useAction.canceled += context => isUsing = false;
     }
 
     private void PrintMessage()
     {
-        Debug.Log("Action performed!s");
+        Debug.Log("Action performed!");
     }
 
     void OnEnable()
@@ -69,6 +75,7 @@ public class PlayerInputHandler : MonoBehaviour
         lookAction.Enable();
         jumpAction.Enable();
         slideAction.Enable();
+        useAction.Enable();
     }
 
     void OnDisable()
@@ -77,5 +84,6 @@ public class PlayerInputHandler : MonoBehaviour
         lookAction.Disable();
         jumpAction.Disable();
         slideAction.Disable();
+        useAction.Enable();
     }
 }

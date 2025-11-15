@@ -170,6 +170,8 @@ public class PlayerMovement : MonoBehaviour
         Vector3 accelerationVector = (transform.right * playerInputHandler.moveInput.x + transform.forward * playerInputHandler.moveInput.y) * airAcceleration * Time.deltaTime;
         float hVMagnitude = horizontalVel.magnitude;
 
+        float alignment = Vector3.Angle(horizontalVel, accelerationVector)/180;
+
         if (hVMagnitude <= maxAirWalkSpeed)
         {
             horizontalVel += accelerationVector;
@@ -252,6 +254,10 @@ public class PlayerMovement : MonoBehaviour
             if (newVel.magnitude <= maxSlideBoost)
             {
                 horizontalVel = newVel;
+            }
+            else
+            {
+                horizontalVel = Vector3.ClampMagnitude(newVel, maxSlideBoost);
             }
             sliding = true;
             frictionForce = slideFriction;
@@ -405,9 +411,10 @@ public class PlayerMovement : MonoBehaviour
             camHolder.transform.localRotation = Quaternion.Euler(verticalRotation, horizontalRotation, 0);
         }
     }
-    
+
     public void AddVelocity(Vector3 vel)
     {
         velocity += vel;
     }
+    //Goofy ahh thinks he can make a movement system
 }
