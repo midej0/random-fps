@@ -54,6 +54,9 @@ MonoBehaviour:
   fireRate: 0.05
   magSize: 30
   automatic: 1
+  mask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &1119755687192728333
 GameObject:
   m_ObjectHideFlags: 0

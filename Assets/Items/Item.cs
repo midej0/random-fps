@@ -19,4 +19,13 @@ public class Item : ScriptableObject
         itemModel = Instantiate(itemPrefab, parent);
         itemModel.transform.localPosition = posOffset;
     }
+
+    public void Holster()
+    {
+        itemModel.SetActive(false);
+    }
+    public void Deploy()
+    {
+        itemModel.SetActive(true);
+    }
 }

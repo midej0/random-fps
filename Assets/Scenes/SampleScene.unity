@@ -1054,7 +1054,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb33ccc0fbcce4a34b94e4da6ff3b162, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  items:
+  inventory:
+  - {fileID: 11400000, guid: 39b3a897862324671aae2916ef42ba05, type: 2}
+  - {fileID: 11400000, guid: 3c2190a4af0e24cd68c3b968630ec381, type: 2}
   - {fileID: 11400000, guid: 39b3a897862324671aae2916ef42ba05, type: 2}
 --- !u!1 &775869923
 GameObject:
@@ -1456,8 +1458,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerControls: {fileID: -944628639613478452, guid: 286421279114e4b00a4dc2429a8d27b5, type: 3}
+  reloadTriggered: 0
   isUsing: 0
   jumpTriggered: 0
+  slot1Triggered: 0
+  slot2Triggered: 0
+  slot3Triggered: 0
 --- !u!4 &1755452690
 Transform:
   m_ObjectHideFlags: 0
